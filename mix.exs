@@ -30,7 +30,7 @@ defmodule MixifyExercism.MixProject do
     [
       name: "mixify_exercism",
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/yourusername/mixify_exercism"}
+      links: %{"GitHub" => "https://github.com/podrigabi/mixify_exercism"}
     ]
   end
 
