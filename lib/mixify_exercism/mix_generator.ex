@@ -145,6 +145,14 @@ defmodule MixifyExercism.MixGenerator do
         dev_deps
       end
 
+    # Add elvis_core if elvis.config is present
+    dev_deps =
+      if config[:has_elvis_config] do
+        ["{:elvis_core, \"~> 4.1\", only: [:dev, :test], runtime: false}" | dev_deps]
+      else
+        dev_deps
+      end
+
     all_deps = mix_deps ++ dev_deps
 
     if all_deps == [] do
@@ -295,13 +303,32 @@ defmodule MixifyExercism.MixGenerator do
   end
 
   defp generate_aliases(config) do
-    # Generate test alias that includes xref checks if configured
-    if config[:xref_checks] || config[:eunit_opts] do
+    aliases = []
+
+    # Add test alias if xref or eunit is configured
+    aliases =
+      if config[:xref_checks] || config[:eunit_opts] do
+        ["test: [\"test\", \"dialyzer\"]" | aliases]
+      else
+        aliases
+      end
+
+    # Add lint alias if elvis.config is present
+    aliases =
+      if config[:has_elvis_config] do
+        ["lint: [\"elvis\"]" | aliases]
+      else
+        aliases
+      end
+
+    if aliases != [] do
+      alias_entries = Enum.join(Enum.reverse(aliases), ",\n            ")
+
       """
 
         defp aliases do
           [
-            test: ["test", "dialyzer"]
+            #{alias_entries}
           ]
         end
       """

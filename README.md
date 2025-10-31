@@ -19,10 +19,12 @@ MixifyExercism is an Elixir tool that parses Erlang `rebar.config` files and gen
   - `dialyzer` → Dialyzer configuration (auto-adds dialyxir)
   - `xref_checks` → Test aliases
   - `eunit_opts` → EUnit test configuration (auto-adds mix_eunit)
+  - `elvis.config` → Elvis linting support (auto-adds elvis_core)
 - **Full EUnit Support**: Automatically configures erlc_options to support:
   - `-include_lib` directives for dependency header files
   - Erlang parse transforms (like `exercism_parse_transform`)
   - Running original Erlang EUnit tests with `mix eunit`
+- **Elvis Linting**: Detects `elvis.config` and adds Elvis code linter with `mix elvis` task
 - Handles all rebar.config patterns found in [Exercism Erlang exercises](https://github.com/exercism/erlang/tree/main/exercises/practice)
 - Provides both programmatic API and CLI interface
 
@@ -87,6 +89,55 @@ The generated mix.exs automatically:
 - Configures `erlc_options` to find dependency header files and parse transforms
 - Sets up `extra_applications` to include all dependencies
 - No need to manually set `ERL_LIBS` environment variable!
+
+## Elvis Linting Support
+
+If your Erlang project has an `elvis.config` file in the same directory as `rebar.config`, mixify_exercism will automatically:
+
+- Add `elvis_core` as a dev/test dependency
+- Create a `mix elvis` task to run the linter
+- Add a `lint` alias for convenience
+
+### Usage
+
+```bash
+# Run elvis linter
+mix elvis
+
+# Or use the alias
+mix lint
+```
+
+### Elvis Configuration
+
+Elvis uses an `elvis.config` file in Erlang format:
+
+```erlang
+[{elvis, [
+  {config, [
+    #{dirs => ["src"], filter => "*.erl", ruleset => erl_files},
+    #{dirs => ["test"], filter => "*.erl", ruleset => erl_files}
+  ]}
+]}].
+```
+
+For more information on configuring Elvis, see the [elvis_core documentation](https://github.com/inaka/elvis_core).
+
+### Manual Installation
+
+If you need to add Elvis support to an existing project:
+
+```elixir
+# In mix.exs deps
+{:elvis_core, "~> 4.1", only: [:dev, :test], runtime: false}
+
+# In aliases
+def aliases do
+  [
+    lint: ["elvis"]
+  ]
+end
+```
 
 ## Example Conversion
 

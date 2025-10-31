@@ -64,4 +64,19 @@ defmodule MixifyExercism.RebarConfig do
       end
     end)
   end
+
+  @doc """
+  Checks if an elvis.config file exists in the same directory as the rebar.config.
+
+  ## Examples
+
+      iex> MixifyExercism.RebarConfig.has_elvis_config?("path/to/rebar.config")
+      true
+
+  """
+  @spec has_elvis_config?(String.t()) :: boolean()
+  def has_elvis_config?(rebar_config_path) do
+    dir = Path.dirname(rebar_config_path)
+    File.exists?(Path.join(dir, "elvis.config"))
+  end
 end

@@ -34,6 +34,8 @@ defmodule MixifyExercism do
   def convert(rebar_path, opts \\ []) do
     with {:ok, config} <- RebarConfig.parse(rebar_path),
          app_name <- infer_app_name(rebar_path, opts),
+         has_elvis <- RebarConfig.has_elvis_config?(rebar_path),
+         config <- Map.put(config, :has_elvis_config, has_elvis),
          opts <- Keyword.put(opts, :app_name, app_name),
          content <- MixGenerator.generate(config, opts) do
       case Keyword.get(opts, :output_path) do
