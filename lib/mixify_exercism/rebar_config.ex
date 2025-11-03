@@ -10,7 +10,8 @@ defmodule MixifyExercism.RebarConfig do
           eunit_tests: list(),
           eunit_opts: keyword(),
           xref_warnings: boolean(),
-          xref_checks: list()
+          xref_checks: list(),
+          format: keyword()
         }
 
   @doc """
@@ -57,6 +58,9 @@ defmodule MixifyExercism.RebarConfig do
 
         {:xref_checks, checks} ->
           Map.put(acc, :xref_checks, checks)
+
+        {:format, opts} ->
+          Map.put(acc, :format, opts)
 
         # Ignore other terms
         _ ->

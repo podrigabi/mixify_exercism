@@ -19,12 +19,15 @@ MixifyExercism is an Elixir tool that parses Erlang `rebar.config` files and gen
   - `dialyzer` → Dialyzer configuration (auto-adds dialyxir)
   - `xref_checks` → Test aliases
   - `eunit_opts` → EUnit test configuration (auto-adds mix_eunit)
+  - `format` → Code formatting support (auto-adds rebar3_format)
   - `elvis.config` → Elvis linting support (auto-adds elvis_core)
 - **Full EUnit Support**: Automatically configures erlc_options to support:
   - `-include_lib` directives for dependency header files
   - Erlang parse transforms (like `exercism_parse_transform`)
   - Running original Erlang EUnit tests with `mix eunit`
 - **Elvis Linting**: Detects `elvis.config` and adds Elvis code linter with `mix elvis` task
+- **Code Formatting**: Detects `{format, ...}` configuration and adds rebar3_format support
+- **"tall" Alias**: Auto-generates combined quality check workflow (format + lint + eunit)
 - Handles all rebar.config patterns found in [Exercism Erlang exercises](https://github.com/exercism/erlang/tree/main/exercises/practice)
 - Provides both programmatic API and CLI interface
 
@@ -139,6 +142,66 @@ def aliases do
 end
 ```
 
+## Code Formatting Support
+
+If your Erlang project has a `{format, ...}` configuration in `rebar.config`, mixify_exercism will automatically:
+
+- Add `rebar3_format` as a dev/test dependency
+- Enable `mix format` to format Erlang code using rebar3_format
+
+### Usage
+
+```bash
+# Format Erlang code
+mix format
+```
+
+### Format Configuration
+
+Format configuration in `rebar.config`:
+
+```erlang
+{format, [
+  {files, ["src/*.erl", "include/*.hrl", "test/*.erl"]},
+  {formatter, default_formatter},
+  {options, #{
+    paper => 100,
+    ribbon => 80
+  }}
+]}.
+```
+
+For more information on configuring rebar3_format, see the [rebar3_format documentation](https://github.com/AdRoll/rebar3_format).
+
+## The "tall" Alias - Combined Quality Check
+
+When your project has format, linting, and testing configured, mixify_exercism automatically generates a `tall` alias that runs all quality checks in sequence:
+
+```bash
+# Run format + lint + eunit in one command
+mix tall
+```
+
+The `tall` alias is auto-generated when any of these are present:
+- Format configuration (`{format, ...}` in rebar.config)
+- Elvis configuration (`elvis.config` file)
+- EUnit tests (`{eunit_opts, ...}` in rebar.config)
+
+This provides a convenient workflow similar to `rebar3 tall` for students following Erlang learning materials.
+
+### Workflow Example
+
+```bash
+# Make changes to your code
+vim src/my_module.erl
+
+# Run all quality checks
+mix tall
+
+# Commit when all checks pass
+git commit -am "Implement feature X"
+```
+
 ## Example Conversion
 
 Given a typical Exercism Erlang `rebar.config`:
@@ -230,6 +293,8 @@ end
 | `eunit_opts` | `erlc_options/0`, aliases | Configures EUnit support; auto-adds `mix_eunit` dependency |
 | `eunit_tests` | `erlc_options/0` | Configures Erlang compiler for test support |
 | `xref_checks` | `aliases/0` | Includes in test pipeline |
+| `format` | `deps/0`, `aliases/0` | Auto-adds `rebar3_format` dependency; enables `mix format` |
+| `elvis.config` (file) | `deps/0`, `aliases/0` | Auto-adds `elvis_core` dependency; creates `mix elvis` task and `lint` alias |
 
 ## Tested Against
 

@@ -59,9 +59,9 @@ defmodule MixifyExercism.MixGenerator do
   defp generate_project_opts(config) do
     opts = []
 
-    # Add aliases if xref_checks or eunit_opts present
+    # Add aliases if xref_checks or eunit_opts or format or elvis present
     opts =
-      if config[:xref_checks] || config[:eunit_opts] do
+      if config[:xref_checks] || config[:eunit_opts] || config[:format] || config[:has_elvis_config] do
         ["aliases: aliases()" | opts]
       else
         opts
@@ -149,6 +149,14 @@ defmodule MixifyExercism.MixGenerator do
     dev_deps =
       if config[:has_elvis_config] do
         ["{:elvis_core, \"~> 4.1\", only: [:dev, :test], runtime: false}" | dev_deps]
+      else
+        dev_deps
+      end
+
+    # Add rebar3_format if format config is present
+    dev_deps =
+      if config[:format] do
+        ["{:rebar3_format, github: \"AdRoll/rebar3_format\", only: [:dev, :test], runtime: false}" | dev_deps]
       else
         dev_deps
       end
@@ -317,6 +325,21 @@ defmodule MixifyExercism.MixGenerator do
     aliases =
       if config[:has_elvis_config] do
         ["lint: [\"elvis\"]" | aliases]
+      else
+        aliases
+      end
+
+    # Add tall alias (format + lint + eunit) if quality tools are present
+    tall_commands = []
+    tall_commands = if config[:format], do: ["format" | tall_commands], else: tall_commands
+    tall_commands = if config[:has_elvis_config], do: ["lint" | tall_commands], else: tall_commands
+    tall_commands = if config[:eunit_opts], do: ["eunit" | tall_commands], else: tall_commands
+
+    aliases =
+      if tall_commands != [] do
+        # Reverse to get correct order: format, lint, eunit
+        tall_list = Enum.reverse(tall_commands) |> Enum.map(&"\"#{&1}\"") |> Enum.join(", ")
+        ["tall: [#{tall_list}]" | aliases]
       else
         aliases
       end
